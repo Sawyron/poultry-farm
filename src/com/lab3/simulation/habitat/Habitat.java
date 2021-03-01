@@ -19,7 +19,9 @@ public class Habitat extends JFrame {
     private boolean isFirstRun = true;
 
     private long time = 0;
+    private int adultBirdTotalCounter = 0;
     private int adultBirdCounter = 0;
+    private int nestlingTotalCounter = 0;
     private int nestlingCounter = 0;
     public static final int DEFAULT_ADULT_BIRD_SPAWN_FREQUENCY = 1000;
     public static final int DEFAULT_NESTLING_SPAWN_FREQUENCY = 1000;
@@ -49,11 +51,10 @@ public class Habitat extends JFrame {
     }
 
     private final List<Bird> birds = new LinkedList<>();
-    private final Map<Long, Long> lifeTime = new HashMap<Long, Long>();
+    private final Map<Long, Long> lifeTime = new HashMap<>();
 
     private final ImageIcon adultBirdImageIcon = new ImageIcon(getClass().getResource("/giphy.png"));
     private final ImageIcon nestlingImageIcon = new ImageIcon(getClass().getResource("/rero_rero.gif"));
-    private final ImageIcon kfcImageIcon = new ImageIcon(getClass().getResource("/kfc.png"));
     private final JPanel topPanel = new JPanel();
     private final ImagePanel middlePanel = new ImagePanel(birds);
     private final JPanel bottomPanel = new JPanel();
@@ -80,6 +81,7 @@ public class Habitat extends JFrame {
                     birds.add(currentBird);
                 }
                 lifeTime.put(currentBird.getID(), elapsedTime);
+                adultBirdTotalCounter++;
                 adultBirdCounter++;
             }
             lastSpawnAdultCheck = elapsedTime;
@@ -91,6 +93,7 @@ public class Habitat extends JFrame {
                     birds.add(currentBird);
                 }
                 lifeTime.put(currentBird.getID(), elapsedTime);
+                nestlingTotalCounter++;
                 nestlingCounter++;
                 lastSpawnNestling = elapsedTime;
             }
@@ -101,14 +104,13 @@ public class Habitat extends JFrame {
     }
 
     private void checkLifeTime(long elapsedTime) {
-        List<Long> toDelete = new LinkedList<>();
+        Set<Long> toDelete = new TreeSet<>();
         for (Map.Entry<Long, Long> entry : lifeTime.entrySet()) {
             for (Bird b : birds) {
                 if (b.getID() == entry.getKey()) {
                     if (!b.isDead()) {
                         if (elapsedTime - entry.getValue() >= b.getLifeTime()) {
                             b.getKilled();
-                            b.setImageIcon(kfcImageIcon);
                             entry.setValue(elapsedTime);
                         }
                         break;
@@ -121,6 +123,12 @@ public class Habitat extends JFrame {
         lifeTime.keySet().removeAll(toDelete);
         Bird.IDsRemoveAll(toDelete);
         synchronized (birds) {
+            birds.forEach(b->{
+                if (toDelete.contains(b.getID())){
+                    if (b instanceof AdultBird) adultBirdCounter--;
+                    if (b instanceof Nestling) nestlingCounter--;
+                }
+            });
             birds.removeIf(b -> toDelete.contains(b.getID()));
         }
     }
@@ -360,9 +368,9 @@ public class Habitat extends JFrame {
             JPanel dialogInfoPanel = new JPanel(new BorderLayout());
             dialogInfo.setTitle("Результат симуляции");
             String info = "Время: " + time / 1000.0 + "\n";
-            info += "Количесво созданных объектов: " + (adultBirdCounter + nestlingCounter) + "\n";
-            info += "Взрослых птиц: " + adultBirdCounter + "\n";
-            info += "Птенцов: " + nestlingCounter + "\n";
+            info += "Количесво созданных объектов: " + (adultBirdTotalCounter + nestlingTotalCounter) + "\n";
+            info += "Взрослых птиц: " + adultBirdTotalCounter + "\n";
+            info += "Птенцов: " + nestlingTotalCounter + "\n";
             JTextArea infoTextArea = new JTextArea(info);
             infoTextArea.setEditable(false);
             JButton buttonContinue = new JButton("Ok");
@@ -413,15 +421,17 @@ public class Habitat extends JFrame {
         simulationInfo.setLayout(new BoxLayout(simulationInfo, BoxLayout.Y_AXIS));
         JLabel title = new JLabel("Результат симуляции.");
         JLabel instanceAmount = new JLabel("Количесво созданных объектов: " + birds.size());
-        JLabel adultBirdAmountLabel = new JLabel("Взрослых птиц: " + adultBirdCounter);
-        JLabel nestlingAmountLabel = new JLabel("Птенцов: " + nestlingCounter);
+        JLabel adultBirdAmountLabel = new JLabel("Взрослых птиц: " + adultBirdTotalCounter);
+        JLabel nestlingAmountLabel = new JLabel("Птенцов: " + nestlingTotalCounter);
         simulationInfo.add(title);
         simulationInfo.add(instanceAmount);
         simulationInfo.add(adultBirdAmountLabel);
         simulationInfo.add(nestlingAmountLabel);
         repaint();
         birds.clear();
+        adultBirdTotalCounter = 0;
         adultBirdCounter = 0;
+        nestlingTotalCounter = 0;
         nestlingCounter = 0;
         lastSpawnAdultCheck = 0;
         lastSpawnNestling = 0;

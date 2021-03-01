@@ -13,7 +13,8 @@ public abstract class Bird implements IBehaviour {
     private static Random random = new Random();
     private long ID;
     private boolean isDead = false;
-    private ImageIcon imageIcon = null;
+    private ImageIcon imageIcon;
+    private final static ImageIcon DeadImageIcon = new ImageIcon(Bird.class.getResource("/kfc.png"));
     private static long deadTime = 5_000;
     protected int ImageH = 50;
     protected int ImageW = 50;
@@ -80,6 +81,7 @@ public abstract class Bird implements IBehaviour {
         vY = 0;
         setImageSize(new Dimension(50, 65));
         isDead = true;
+        setImageIcon(DeadImageIcon);
     }
 
 
