@@ -17,6 +17,7 @@ public class Habitat extends JFrame {
     private boolean isRunning = false;
     private boolean timeVisible = false;
     private boolean isFirstRun = true;
+    private final Warden WARDEN = new Warden();
 
     private long time = 0;
     private int adultBirdTotalCounter = 0;
@@ -61,7 +62,6 @@ public class Habitat extends JFrame {
     private final JLabel timeLabel = new JLabel();
     private final JRadioButton buttonTimeVisibilityOn = new JRadioButton("Показывать время симуляции");
     private final JRadioButton buttonTimeVisibilityOff = new JRadioButton("Скрывать время симуляции", true);
-    private final JPanel simulationInfo = new JPanel();
     private final JButton startButton = new JButton("Start");
     private final JButton stopButton = new JButton("Stop");
     private final JCheckBox infoCheckBox = new JCheckBox("Показывать информацию");
@@ -100,7 +100,6 @@ public class Habitat extends JFrame {
         }
         checkLifeTime(elapsedTime);
         time = elapsedTime;
-        //repaint();
     }
 
     private void checkLifeTime(long elapsedTime) {
@@ -123,8 +122,8 @@ public class Habitat extends JFrame {
         lifeTime.keySet().removeAll(toDelete);
         Bird.IDsRemoveAll(toDelete);
         synchronized (birds) {
-            birds.forEach(b->{
-                if (toDelete.contains(b.getID())){
+            birds.forEach(b -> {
+                if (toDelete.contains(b.getID())) {
                     if (b instanceof AdultBird) adultBirdCounter--;
                     if (b instanceof Nestling) nestlingCounter--;
                 }
@@ -209,17 +208,18 @@ public class Habitat extends JFrame {
         };
         Timer updateTimer = new Timer();
         updateTimer.schedule(task, 0, 100);
-
-        TimerTask repaintTask = new TimerTask() {
-            @Override
-            public void run() {
-                if(startStop){
-                    repaint();
-                }
-            }
-        };
-        Timer repaintTimer = new Timer();
-        repaintTimer.schedule(repaintTask, 0, 16);
+//        TimerTask repaintTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                if(startStop){
+//                    repaint();
+//                }
+//            }
+//        };
+//        Timer repaintTimer = new Timer();
+//        repaintTimer.schedule(repaintTask, 0, 16);
+        Thread paintThread = new Thread(new Painter(this));
+        paintThread.start();
 
 
         KeyAdapter keyListener = new MainKeyListener();
@@ -235,6 +235,19 @@ public class Habitat extends JFrame {
         this.setJMenuBar(mainMenuBar);
         addComponents();
 
+        // On close operation
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                WARDEN.setFinish(true);
+                try {
+                    paintThread.join();
+                } catch (InterruptedException interruptedException) {
+                    interruptedException.printStackTrace();
+                }
+                System.exit(0);
+            }
+        });
     }
 
     private void setBottomPanel() {
@@ -301,7 +314,6 @@ public class Habitat extends JFrame {
     private void addComponents() {
         add(topPanel, BorderLayout.NORTH);
         add(bottomPanel, BorderLayout.SOUTH);
-        topPanel.add(simulationInfo);
         topPanel.add(timeLabel);
         add(middlePanel, BorderLayout.CENTER);
         bottomPanel.add(startButton);
@@ -309,6 +321,10 @@ public class Habitat extends JFrame {
         bottomPanel.add(infoCheckBox);
         bottomPanel.add(buttonTimeVisibilityOn);
         bottomPanel.add(buttonTimeVisibilityOff);
+    }
+
+    public Warden getWARDEN() {
+        return WARDEN;
     }
 
     private class MainKeyListener extends KeyAdapter {
@@ -345,6 +361,7 @@ public class Habitat extends JFrame {
     void switchSimulationState() {
         startStop = !startStop;
         mainMenuBar.setPauseMenuItemState(startStop);
+        WARDEN.setPause(!startStop);
 
     }
 
@@ -363,6 +380,7 @@ public class Habitat extends JFrame {
 
     void prepareSimulationStop() {
         startStop = false;
+        WARDEN.setPause(true);
         if (infoCheckBox.isSelected()) {
             JDialog dialogInfo = new JDialog();
             JPanel dialogInfoPanel = new JPanel(new BorderLayout());
@@ -381,6 +399,7 @@ public class Habitat extends JFrame {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     startStop = true;
+                    WARDEN.setPause(false);
                     dialogInfo.dispose();
                 }
             });
@@ -416,17 +435,10 @@ public class Habitat extends JFrame {
         isRunning = false;
         startStop = false;
         isFirstRun = true;
-        simulationInfo.removeAll();
-        simulationInfo.revalidate();
-        simulationInfo.setLayout(new BoxLayout(simulationInfo, BoxLayout.Y_AXIS));
         JLabel title = new JLabel("Результат симуляции.");
         JLabel instanceAmount = new JLabel("Количесво созданных объектов: " + birds.size());
         JLabel adultBirdAmountLabel = new JLabel("Взрослых птиц: " + adultBirdTotalCounter);
         JLabel nestlingAmountLabel = new JLabel("Птенцов: " + nestlingTotalCounter);
-        simulationInfo.add(title);
-        simulationInfo.add(instanceAmount);
-        simulationInfo.add(adultBirdAmountLabel);
-        simulationInfo.add(nestlingAmountLabel);
         repaint();
         birds.clear();
         adultBirdTotalCounter = 0;
@@ -442,10 +454,8 @@ public class Habitat extends JFrame {
     }
 
     void startSimulation() {
+        WARDEN.setRunning(true);
         time = 0;
-        simulationInfo.removeAll();
-        simulationInfo.revalidate();
-        simulationInfo.repaint();
         startStop = true;
         isRunning = true;
         startButton.setEnabled(false);
