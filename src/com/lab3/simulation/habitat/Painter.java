@@ -20,12 +20,20 @@ public class Painter implements Runnable {
             }
         }
         while (!warden.isFinish()) {
-            if (!warden.isPause()) {
+            if (!warden.isPause() && warden.isRunning()) {
                 habitat.repaint();
                 try {
                     Thread.sleep(20);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+            }else {
+                synchronized (warden){
+                    try {
+                        warden.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

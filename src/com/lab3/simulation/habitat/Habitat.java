@@ -67,6 +67,8 @@ public class Habitat extends JFrame {
     private final JCheckBox infoCheckBox = new JCheckBox("Показывать информацию");
     private final MainMenuBar mainMenuBar = new MainMenuBar(this);
 
+    private Thread paintThread;
+
 
     boolean getStartStop() {
         return startStop;
@@ -218,7 +220,8 @@ public class Habitat extends JFrame {
 //        };
 //        Timer repaintTimer = new Timer();
 //        repaintTimer.schedule(repaintTask, 0, 16);
-        Thread paintThread = new Thread(new Painter(this));
+
+        paintThread = new Thread(new Painter(this));
         paintThread.start();
 
 
@@ -432,13 +435,11 @@ public class Habitat extends JFrame {
     }
 
     private void stopSimulation() {
+        WARDEN.setRunning(false);
+        WARDEN.setPause(true);
         isRunning = false;
         startStop = false;
         isFirstRun = true;
-        JLabel title = new JLabel("Результат симуляции.");
-        JLabel instanceAmount = new JLabel("Количесво созданных объектов: " + birds.size());
-        JLabel adultBirdAmountLabel = new JLabel("Взрослых птиц: " + adultBirdTotalCounter);
-        JLabel nestlingAmountLabel = new JLabel("Птенцов: " + nestlingTotalCounter);
         repaint();
         birds.clear();
         adultBirdTotalCounter = 0;
@@ -450,11 +451,11 @@ public class Habitat extends JFrame {
         startButton.setEnabled(true);
         stopButton.setEnabled(false);
         mainMenuBar.setRunningState(false);
-
     }
 
     void startSimulation() {
         WARDEN.setRunning(true);
+        WARDEN.setPause(false);
         time = 0;
         startStop = true;
         isRunning = true;
