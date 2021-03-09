@@ -14,7 +14,6 @@ import java.util.Timer;
 
 public class Habitat extends JFrame {
     private boolean startStop = false;
-    private boolean isRunning = false;
     private boolean timeVisible = false;
     private boolean isFirstRun = true;
     private final Warden WARDEN = new Warden();
@@ -197,7 +196,7 @@ public class Habitat extends JFrame {
             @Override
             public void run() {
                 long elapsed;
-                if (startStop && isRunning) {
+                if (startStop) {
                     if (isFirstRun) {
                         isFirstRun = false;
                         startTime = System.currentTimeMillis();
@@ -210,6 +209,7 @@ public class Habitat extends JFrame {
         };
         Timer updateTimer = new Timer();
         updateTimer.schedule(task, 0, 100);
+
 //        TimerTask repaintTask = new TimerTask() {
 //            @Override
 //            public void run() {
@@ -335,12 +335,12 @@ public class Habitat extends JFrame {
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_B:
-                    if (!isRunning) {
+                    if (isFirstRun) {
                         startSimulation();
                     }
                     break;
                 case KeyEvent.VK_E: {
-                    if (isRunning) {
+                    if (!isFirstRun) {
                         prepareSimulationStop();
                     }
                     break;
@@ -349,7 +349,7 @@ public class Habitat extends JFrame {
                     setTimeVisibility(!timeVisible);
                     break;
                 case KeyEvent.VK_P:
-                    if (isRunning) {
+                    if (!isFirstRun) {
                         switchSimulationState();
                     }
                     break;
@@ -437,7 +437,6 @@ public class Habitat extends JFrame {
     private void stopSimulation() {
         WARDEN.setRunning(false);
         WARDEN.setPause(true);
-        isRunning = false;
         startStop = false;
         isFirstRun = true;
         repaint();
@@ -458,7 +457,6 @@ public class Habitat extends JFrame {
         WARDEN.setPause(false);
         time = 0;
         startStop = true;
-        isRunning = true;
         startButton.setEnabled(false);
         stopButton.setEnabled(true);
         mainMenuBar.setRunningState(true);
