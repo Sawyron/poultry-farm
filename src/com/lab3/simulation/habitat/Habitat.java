@@ -67,14 +67,22 @@ public class Habitat extends JFrame {
     private final MainMenuBar mainMenuBar = new MainMenuBar(this);
 
     private Thread paintThread;
+    private Thread updateThread;
 
 
     boolean getStartStop() {
         return startStop;
     }
 
+    public boolean isFirstRun() {
+        return isFirstRun;
+    }
 
-    private void update(long elapsedTime) {
+    public void setFirstRun(boolean firstRun) {
+        isFirstRun = firstRun;
+    }
+
+    void updateTime(long elapsedTime) {
         if (elapsedTime - lastSpawnAdultCheck >= adultBirdSpawnFrequency) {
             if (Math.random() >= adultBirdSpawnProbability) {
                 Bird currentBird = new AdultBird(middlePanel.getSize(), adultBirdImageIcon);
@@ -190,25 +198,25 @@ public class Habitat extends JFrame {
         this.setFocusable(true);
         this.requestFocusInWindow();
 
-        TimerTask task = new TimerTask() {
-            private long startTime;
-
-            @Override
-            public void run() {
-                long elapsed;
-                if (startStop) {
-                    if (isFirstRun) {
-                        isFirstRun = false;
-                        startTime = System.currentTimeMillis();
-                    } else {
-                        elapsed = System.currentTimeMillis() - startTime;
-                        update(elapsed);
-                    }
-                }
-            }
-        };
-        Timer updateTimer = new Timer();
-        updateTimer.schedule(task, 0, 100);
+//        TimerTask task = new TimerTask() {
+//            private long startTime;
+//
+//            @Override
+//            public void run() {
+//                long elapsed;
+//                if (startStop) {
+//                    if (isFirstRun) {
+//                        isFirstRun = false;
+//                        startTime = System.currentTimeMillis();
+//                    } else {
+//                        elapsed = System.currentTimeMillis() - startTime;
+//                        updateTime(elapsed);
+//                    }
+//                }
+//            }
+//        };
+//        Timer updateTimer = new Timer();
+//        updateTimer.schedule(task, 0, 100);
 
 //        TimerTask repaintTask = new TimerTask() {
 //            @Override
@@ -221,6 +229,8 @@ public class Habitat extends JFrame {
 //        Timer repaintTimer = new Timer();
 //        repaintTimer.schedule(repaintTask, 0, 16);
 
+        updateThread = new Thread(new Updater(this));
+        updateThread.start();
         paintThread = new Thread(new Painter(this));
         paintThread.start();
 
@@ -245,6 +255,7 @@ public class Habitat extends JFrame {
                 WARDEN.setFinish(true);
                 try {
                     paintThread.join();
+                    updateThread.join();
                 } catch (InterruptedException interruptedException) {
                     interruptedException.printStackTrace();
                 }

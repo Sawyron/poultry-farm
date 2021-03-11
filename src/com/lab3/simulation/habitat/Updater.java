@@ -1,13 +1,13 @@
 package com.lab3.simulation.habitat;
 
-
-public class Painter implements Runnable {
-    private final Habitat habitat;
+public class Updater implements Runnable {
+    private final Habitat HABITAT;
     private final Warden WARDEN;
+    private long startTime;
 
-    public Painter(Habitat habitat) {
-        this.habitat = habitat;
-        this.WARDEN = habitat.getWARDEN();
+    public Updater(Habitat HABITAT) {
+        this.HABITAT = HABITAT;
+        this.WARDEN = HABITAT.getWARDEN();
     }
 
     @Override
@@ -20,15 +20,22 @@ public class Painter implements Runnable {
             }
         }
         while (!WARDEN.isFinish()) {
-            if (!WARDEN.isPause() && WARDEN.isRunning()) {
-                habitat.repaint();
+            if (WARDEN.isRunning()) {
+                long elapsed;
+                if (HABITAT.isFirstRun()) {
+                    HABITAT.setFirstRun(false);
+                    startTime = System.currentTimeMillis();
+                } else {
+                    elapsed = System.currentTimeMillis() - startTime;
+                    HABITAT.updateTime(elapsed);
+                }
                 try {
-                    Thread.sleep(20);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }else {
-                synchronized (WARDEN){
+            } else {
+                synchronized (WARDEN) {
                     try {
                         WARDEN.wait();
                     } catch (InterruptedException e) {
