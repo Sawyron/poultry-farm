@@ -101,4 +101,6 @@ public abstract class Bird implements IBehaviour {
         if (y < 0 || y >= g.getClipBounds().height - ImageH) vY *= -1;
         g.drawImage(imageIcon.getImage(), x, y, ImageW, ImageH, null);
     }
+
+
 }

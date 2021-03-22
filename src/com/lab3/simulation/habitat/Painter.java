@@ -12,13 +12,6 @@ public class Painter implements Runnable {
 
     @Override
     public void run() {
-        synchronized (WARDEN) {
-            try {
-                WARDEN.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
         while (!WARDEN.isFinish()) {
             if (!WARDEN.isPause() && WARDEN.isRunning()) {
                 habitat.repaint();
