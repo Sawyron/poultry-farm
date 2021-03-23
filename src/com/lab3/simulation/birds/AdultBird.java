@@ -1,8 +1,7 @@
-package com.lab3.simulation;
+package com.lab3.simulation.birds;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.UUID;
 
 public class AdultBird extends Bird {
     private static long lifeTime = 20_000;

@@ -1,4 +1,4 @@
-package com.lab3.simulation;
+package com.lab3.simulation.birds;
 
 import javax.swing.*;
 import java.awt.*;

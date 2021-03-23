@@ -1,4 +1,6 @@
-package com.lab3.simulation;
+package com.lab3.simulation.birds;
+
+import com.lab3.simulation.IBehaviour;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,6 +12,15 @@ public abstract class Bird implements IBehaviour {
     private int vX = (int) (Math.random() * (10 + 1) + -5) + 1;
     private int vY = (int) (Math.random() * (10 + 1) + -5) + 1;
     private final static Set<Long> ID_SET = new TreeSet<>();
+
+    public void setVX(int vX) {
+        this.vX = vX;
+    }
+
+    public void setVY(int vY) {
+        this.vY = vY;
+    }
+
     private static Random random = new Random();
     private long ID;
     private boolean isDead = false;
@@ -18,6 +29,17 @@ public abstract class Bird implements IBehaviour {
     private static long deadTime = 5_000;
     protected int ImageH = 50;
     protected int ImageW = 50;
+
+    public boolean isOutOfX() {
+        return outOfX;
+    }
+
+    public boolean isOutOfY() {
+        return outOfY;
+    }
+
+    private boolean outOfX = false;
+    private boolean outOfY = false;
 
 
     @Override
@@ -95,12 +117,27 @@ public abstract class Bird implements IBehaviour {
 
     @Override
     public void paint(Graphics g) {
-        x += vX;
-        y += vY;
-        if (x < 0 || (x >= g.getClipBounds().width - ImageW)) vX *= -1;
-        if (y < 0 || y >= g.getClipBounds().height - ImageH) vY *= -1;
+        if (x < 0 || (x >= g.getClipBounds().width - ImageW)) {
+            outOfX = true;
+            vX *=-1;
+        } else outOfX = false;
+        if (y < 0 || y >= g.getClipBounds().height - ImageH) {
+            outOfY = true;
+            vY*=-1;
+        } else outOfY = false;
         g.drawImage(imageIcon.getImage(), x, y, ImageW, ImageH, null);
     }
 
+    public void move() {
+        x += vX;
+        y += vY;
+    }
 
+    public int getVX() {
+        return vX;
+    }
+
+    public int getVY() {
+        return vY;
+    }
 }

@@ -1,8 +1,9 @@
 package com.lab3.simulation.habitat;
 
-import com.lab3.simulation.AdultBird;
-import com.lab3.simulation.Bird;
-import com.lab3.simulation.Nestling;
+import com.lab3.simulation.birds.AdultBird;
+import com.lab3.simulation.birds.AdultBirdAI;
+import com.lab3.simulation.birds.Bird;
+import com.lab3.simulation.birds.Nestling;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -10,7 +11,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
-import java.util.Timer;
 
 public class Habitat extends JFrame {
     private boolean startStop = false;
@@ -68,6 +68,7 @@ public class Habitat extends JFrame {
 
     private Thread paintThread;
     private Thread updateThread;
+    private Thread adultBirdAIThread;
 
 
     boolean getStartStop() {
@@ -198,41 +199,12 @@ public class Habitat extends JFrame {
         this.setFocusable(true);
         this.requestFocusInWindow();
 
-//        TimerTask task = new TimerTask() {
-//            private long startTime;
-//
-//            @Override
-//            public void run() {
-//                long elapsed;
-//                if (startStop) {
-//                    if (isFirstRun) {
-//                        isFirstRun = false;
-//                        startTime = System.currentTimeMillis();
-//                    } else {
-//                        elapsed = System.currentTimeMillis() - startTime;
-//                        updateTime(elapsed);
-//                    }
-//                }
-//            }
-//        };
-//        Timer updateTimer = new Timer();
-//        updateTimer.schedule(task, 0, 100);
-
-//        TimerTask repaintTask = new TimerTask() {
-//            @Override
-//            public void run() {
-//                if(startStop){
-//                    repaint();
-//                }
-//            }
-//        };
-//        Timer repaintTimer = new Timer();
-//        repaintTimer.schedule(repaintTask, 0, 16);
-
         updateThread = new Thread(new Updater(this));
         updateThread.start();
         paintThread = new Thread(new Painter(this));
         paintThread.start();
+        adultBirdAIThread = new Thread(new AdultBirdAI(birds,WARDEN).getThread());
+        adultBirdAIThread.start();
 
 
         KeyAdapter keyListener = new MainKeyListener();
@@ -256,6 +228,7 @@ public class Habitat extends JFrame {
                 try {
                     paintThread.join();
                     updateThread.join();
+                    adultBirdAIThread.join();
                 } catch (InterruptedException interruptedException) {
                     interruptedException.printStackTrace();
                 }
