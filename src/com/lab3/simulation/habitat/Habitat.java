@@ -201,7 +201,7 @@ public class Habitat extends JFrame {
         this.setFocusable(true);
         this.requestFocusInWindow();
 
-        adultBirdAI = new AdultBirdAI(birds,WARDEN);
+        adultBirdAI = new AdultBirdAI(birds, WARDEN);
 
         updateThread = new Thread(new Updater(this));
         updateThread.start();
@@ -209,7 +209,6 @@ public class Habitat extends JFrame {
         paintThread.start();
         adultBirdAIThread = new Thread(adultBirdAI.getThread());
         adultBirdAIThread.start();
-
 
 
         KeyAdapter keyListener = new MainKeyListener();
@@ -449,6 +448,30 @@ public class Habitat extends JFrame {
         startButton.setEnabled(false);
         stopButton.setEnabled(true);
         mainMenuBar.setRunningState(true);
+    }
+
+    void setPaintThreadPriority(int value) {
+        paintThread.setPriority(value);
+    }
+
+    void setUpdateThreadPriority(int value) {
+        updateThread.setPriority(value);
+    }
+
+    void setAdultBirdAIThreadPriority(int value) {
+        adultBirdAIThread.setPriority(value);
+    }
+
+    int getPaintThreadPriority() {
+        return paintThread.getPriority();
+    }
+
+    int getUpdateThreadPriority() {
+        return updateThread.getPriority();
+    }
+
+    int getAdultBirdAIThreadPriority() {
+        return adultBirdAIThread.getPriority();
     }
 
 }

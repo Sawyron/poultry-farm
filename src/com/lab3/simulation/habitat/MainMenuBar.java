@@ -15,6 +15,7 @@ public class MainMenuBar extends JMenuBar {
     private final JMenuItem pauseMenuItem = new JMenuItem("Поставить на паузу");
     private final JMenuItem timeVisibleMenuItem = new JMenuItem("Показывать время");
     private final JMenuItem livingObjectDialogMenuItem = new JMenuItem("Список живых объектов");
+    private final JMenuItem threadDialogMenuItem = new JMenuItem("Управление потоками");
 
     public MainMenuBar(Habitat habitat) {
         this.habitat = habitat;
@@ -86,6 +87,15 @@ public class MainMenuBar extends JMenuBar {
                 livingObjectsDialog.setVisible(true);
             }
         });
+        threadDialogMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ThreadDialog threadDialog = new ThreadDialog(habitat);
+                threadDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                threadDialog.setLocationRelativeTo(null);
+                threadDialog.setVisible(true);
+            }
+        });
 
 
         mainMenu.add(startMenuItem);
@@ -97,6 +107,7 @@ public class MainMenuBar extends JMenuBar {
         mainMenu.add(livingObjectDialogMenuItem);
         mainMenu.addSeparator();
         mainMenu.add(settingsDialogMenuItem);
+        mainMenu.add(threadDialogMenuItem);
         mainMenu.addSeparator();
         mainMenu.add(exitMenuItem);
         this.add(mainMenu);
