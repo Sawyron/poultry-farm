@@ -70,6 +70,8 @@ public class Habitat extends JFrame {
     private Thread updateThread;
     private Thread adultBirdAIThread;
 
+    private AdultBirdAI adultBirdAI;
+
 
     boolean getStartStop() {
         return startStop;
@@ -88,7 +90,7 @@ public class Habitat extends JFrame {
             if (Math.random() >= adultBirdSpawnProbability) {
                 Bird currentBird = new AdultBird(middlePanel.getSize(), adultBirdImageIcon);
                 synchronized (birds) {
-                    birds.add(currentBird);
+                    adultBirdAI.add(currentBird);
                 }
                 lifeTime.put(currentBird.getID(), elapsedTime);
                 adultBirdTotalCounter++;
@@ -100,7 +102,7 @@ public class Habitat extends JFrame {
             if (elapsedTime - lastSpawnNestling >= nestlingSpawnFrequency) {
                 Bird currentBird = new Nestling(middlePanel.getSize(), nestlingImageIcon);
                 synchronized (birds) {
-                    birds.add(currentBird);
+                    adultBirdAI.add(currentBird);
                 }
                 lifeTime.put(currentBird.getID(), elapsedTime);
                 nestlingTotalCounter++;
@@ -199,12 +201,15 @@ public class Habitat extends JFrame {
         this.setFocusable(true);
         this.requestFocusInWindow();
 
+        adultBirdAI = new AdultBirdAI(birds,WARDEN);
+
         updateThread = new Thread(new Updater(this));
         updateThread.start();
         paintThread = new Thread(new Painter(this));
         paintThread.start();
-        adultBirdAIThread = new Thread(new AdultBirdAI(birds,WARDEN).getThread());
+        adultBirdAIThread = new Thread(adultBirdAI.getThread());
         adultBirdAIThread.start();
+
 
 
         KeyAdapter keyListener = new MainKeyListener();

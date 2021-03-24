@@ -23,7 +23,7 @@ public class Updater implements Runnable {
                     HABITAT.updateTime(elapsed);
                 }
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

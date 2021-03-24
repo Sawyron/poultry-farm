@@ -10,7 +10,10 @@ public abstract class BaseAI implements Runnable {
         this.WARDEN = WARDEN;
     }
 
-    private static long period = 1_000;
+    protected static long period = 5_000;
+    protected long lastVelocityChange = 0;
+    protected boolean firstRun = true;
+    protected Boolean active;
 
     public Thread getThread() {
         return thread;
@@ -20,11 +23,13 @@ public abstract class BaseAI implements Runnable {
     protected final List<Bird> list;
     protected static Bird leaderBird;
     private final Warden WARDEN;
+    protected int vX = (int) (Math.random() * (10 + 1) + -5) + 1;
+    protected int vY = (int) (Math.random() * (10 + 1) + -5) + 1;
 
     @Override
     public void run() {
         while (!WARDEN.isFinish()) {
-            if (!WARDEN.isPause() && WARDEN.isRunning()) {
+            if (!WARDEN.isPause() && WARDEN.isRunning() && active) {
                 if (leaderBird == null) findLeader();
                 else {
                     maintenanceLeader();
@@ -64,6 +69,17 @@ public abstract class BaseAI implements Runnable {
         }
     }
 
+    protected void setVelocity() {
+        synchronized (list) {
+            for (Bird b : list) {
+                if (!b.isDead()) {
+                    b.setVelocity(vX, vY);
+                }
+            }
+        }
+    }
+
     abstract void move();
 
+    public abstract void add(Bird bird);
 }

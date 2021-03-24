@@ -9,21 +9,20 @@ import java.util.*;
 public abstract class Bird implements IBehaviour {
     private int x = 0;
     private int y = 0;
-    private int vX = (int) (Math.random() * (10 + 1) + -5) + 1;
-    private int vY = (int) (Math.random() * (10 + 1) + -5) + 1;
+    protected int vX = (int) (Math.random() * (10 + 1) + -5) + 1;
+    protected int vY = (int) (Math.random() * (10 + 1) + -5) + 1;
     private final static Set<Long> ID_SET = new TreeSet<>();
 
-    public void setVX(int vX) {
+    public void setVelocity(int vX, int vY) {
         this.vX = vX;
-    }
-
-    public void setVY(int vY) {
         this.vY = vY;
+        stopped = false;
     }
 
     private static Random random = new Random();
     private long ID;
     private boolean isDead = false;
+    private boolean stopped = false;
     private ImageIcon imageIcon;
     private final static ImageIcon DeadImageIcon = new ImageIcon(Bird.class.getResource("/kfc.png"));
     private static long deadTime = 5_000;
@@ -117,15 +116,23 @@ public abstract class Bird implements IBehaviour {
 
     @Override
     public void paint(Graphics g) {
-        if (x < 0 || (x >= g.getClipBounds().width - ImageW)) {
+        if ((x < 0 || (x >= g.getClipBounds().width - ImageW)) && !isDead && !stopped) {
             outOfX = true;
-            vX *=-1;
+            getStopped();
         } else outOfX = false;
-        if (y < 0 || y >= g.getClipBounds().height - ImageH) {
+        if ((y < 0 || y >= g.getClipBounds().height - ImageH) && !isDead && !stopped) {
             outOfY = true;
-            vY*=-1;
+            getStopped();
         } else outOfY = false;
         g.drawImage(imageIcon.getImage(), x, y, ImageW, ImageH, null);
+    }
+
+    private void getStopped() {
+        vX *= -1;
+        vY *= -1;
+        move();
+        stopped = true;
+        vX = vY = 0;
     }
 
     public void move() {
