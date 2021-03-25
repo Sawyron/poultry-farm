@@ -84,6 +84,7 @@ public class ThreadDialog extends JDialog {
             }
         };
         ActionListener[] actionListeners = {adultBirdAIActionListener, nestlingAIActionListener};
+        boolean[] statuses = {WARDEN.isAdultBirdAIActive(), WARDEN.isNestlingAIActive()};
         for (int i = 0; i < AIThreadComboBoxes.length; i++) {
             AIThreadComboBoxes[i].setFocusable(false);
             JPanel subPanel = new JPanel();
@@ -97,7 +98,8 @@ public class ThreadDialog extends JDialog {
             offButton.setFocusable(false);
             buttonGroups[i].add(onButton);
             buttonGroups[i].add(offButton);
-            onButton.setSelected(true);
+            if (statuses[i]) onButton.setSelected(true);
+            else offButton.setSelected(true);
             onButton.addActionListener(actionListeners[i]);
             offButton.addActionListener(actionListeners[i]);
             JPanel buttonPanel = new JPanel();
