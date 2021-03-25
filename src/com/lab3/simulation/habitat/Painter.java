@@ -1,34 +1,19 @@
 package com.lab3.simulation.habitat;
 
 
-public class Painter implements Runnable {
-    private final Habitat habitat;
-    private final Warden WARDEN;
+public class Painter extends Service {
 
-    public Painter(Habitat habitat) {
-        this.habitat = habitat;
-        this.WARDEN = habitat.getWARDEN();
+    public Painter(Habitat habitat, long period) {
+        super(habitat, period);
     }
 
     @Override
-    public void run() {
-        while (!WARDEN.isFinish()) {
-            if (!WARDEN.isPause() && WARDEN.isRunning()) {
-                habitat.repaint();
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }else {
-                synchronized (WARDEN){
-                    try {
-                        WARDEN.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+    public boolean isRunning() {
+        return (!WARDEN.isPause() && WARDEN.isRunning());
+    }
+
+    @Override
+    public void execute() {
+        habitat.repaint();
     }
 }

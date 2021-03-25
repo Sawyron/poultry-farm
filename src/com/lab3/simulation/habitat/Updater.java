@@ -1,41 +1,27 @@
 package com.lab3.simulation.habitat;
 
-public class Updater implements Runnable {
-    private final Habitat HABITAT;
-    private final Warden WARDEN;
+public class Updater extends Service {
+
     private long startTime;
 
-    public Updater(Habitat HABITAT) {
-        this.HABITAT = HABITAT;
-        this.WARDEN = HABITAT.getWARDEN();
+    public Updater(Habitat habitat, long period) {
+        super(habitat, period);
     }
 
     @Override
-    public void run() {
-        while (!WARDEN.isFinish()) {
-            if (WARDEN.isRunning()) {
-                long elapsed;
-                if (HABITAT.isFirstRun()) {
-                    HABITAT.setFirstRun(false);
-                    startTime = System.currentTimeMillis();
-                } else {
-                    elapsed = System.currentTimeMillis() - startTime;
-                    HABITAT.updateTime(elapsed);
-                }
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                synchronized (WARDEN) {
-                    try {
-                        WARDEN.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+    public boolean isRunning() {
+        return WARDEN.isRunning();
+    }
+
+    @Override
+    public void execute() {
+        long elapsed;
+        if (habitat.isFirstRun()) {
+            habitat.setFirstRun(false);
+            startTime = System.currentTimeMillis();
+        } else {
+            elapsed = System.currentTimeMillis() - startTime;
+            habitat.updateTime(elapsed);
         }
     }
 }

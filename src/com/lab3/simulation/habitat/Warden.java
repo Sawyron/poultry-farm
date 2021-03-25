@@ -3,18 +3,27 @@ package com.lab3.simulation.habitat;
 public class Warden {
     private volatile boolean finish = false;
     private volatile boolean running = false;
-    private volatile Boolean pause = false;
+    private volatile boolean pause = false;
+    private volatile boolean adultBirdAIActive = true;
+    private volatile boolean nestlingAIActive = true;
 
-    public boolean getAdultBirdAIActive() {
+    public synchronized boolean isNestlingAIActive() {
+        return nestlingAIActive;
+    }
+
+    public synchronized void setNestlingAIActive(boolean nestlingAIActive) {
+        notify();
+        this.nestlingAIActive = nestlingAIActive;
+    }
+
+    public synchronized boolean isAdultBirdAIActive() {
         return adultBirdAIActive;
     }
 
-    public void setAdultBirdAIActive(boolean adultBirdAIActive) {
-        this.adultBirdAIActive = adultBirdAIActive;
+    public synchronized void setAdultBirdAIActive(boolean adultBirdAIActive) {
         notify();
+        this.adultBirdAIActive = adultBirdAIActive;
     }
-
-    private volatile boolean adultBirdAIActive = true;
 
     public synchronized boolean isFinish() {
         return finish;

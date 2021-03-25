@@ -1,9 +1,6 @@
 package com.lab3.simulation.habitat;
 
-import com.lab3.simulation.birds.AdultBird;
-import com.lab3.simulation.birds.AdultBirdAI;
-import com.lab3.simulation.birds.Bird;
-import com.lab3.simulation.birds.Nestling;
+import com.lab3.simulation.birds.*;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -66,11 +63,13 @@ public class Habitat extends JFrame {
     private final JCheckBox infoCheckBox = new JCheckBox("Показывать информацию");
     private final MainMenuBar mainMenuBar = new MainMenuBar(this);
 
-    private Thread paintThread;
-    private Thread updateThread;
-    private Thread adultBirdAIThread;
+    private final Thread paintThread;
+    private final Thread updateThread;
+    private final Thread adultBirdAIThread;
+    private final Thread nestlingBirdAIThread;
 
-    private AdultBirdAI adultBirdAI;
+    private final AdultBirdAI adultBirdAI;
+    private final NestlingAI nestlingAI;
 
 
     boolean getStartStop() {
@@ -201,14 +200,17 @@ public class Habitat extends JFrame {
         this.setFocusable(true);
         this.requestFocusInWindow();
 
-        adultBirdAI = new AdultBirdAI(birds, WARDEN);
+        adultBirdAI = new AdultBirdAI(this, 20, birds);
+        nestlingAI = new NestlingAI(this, 20, birds);
 
-        updateThread = new Thread(new Updater(this));
+        updateThread = new Thread(new Updater(this, 50));
         updateThread.start();
-        paintThread = new Thread(new Painter(this));
+        paintThread = new Thread(new Painter(this, 20));
         paintThread.start();
         adultBirdAIThread = new Thread(adultBirdAI.getThread());
         adultBirdAIThread.start();
+        nestlingBirdAIThread = new Thread(nestlingAI.getThread());
+        nestlingBirdAIThread.start();
 
 
         KeyAdapter keyListener = new MainKeyListener();
@@ -233,6 +235,7 @@ public class Habitat extends JFrame {
                     paintThread.join();
                     updateThread.join();
                     adultBirdAIThread.join();
+                    nestlingBirdAIThread.join();
                 } catch (InterruptedException interruptedException) {
                     interruptedException.printStackTrace();
                 }
@@ -462,6 +465,10 @@ public class Habitat extends JFrame {
         adultBirdAIThread.setPriority(value);
     }
 
+    void setNestlingAIThreadPriority(int value) {
+        nestlingBirdAIThread.setPriority(value);
+    }
+
     int getPaintThreadPriority() {
         return paintThread.getPriority();
     }
@@ -472,6 +479,10 @@ public class Habitat extends JFrame {
 
     int getAdultBirdAIThreadPriority() {
         return adultBirdAIThread.getPriority();
+    }
+
+    int getNestlingAIThreadPriority() {
+        return nestlingBirdAIThread.getPriority();
     }
 
 }
