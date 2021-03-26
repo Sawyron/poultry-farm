@@ -32,7 +32,7 @@ public class AdultBirdAI extends BaseAI {
     }
 
     @Override
-    public void add(Bird bird) {
+    public synchronized void add(Bird bird) {
         bird.setVelocity(vX, vY);
         list.add(bird);
     }

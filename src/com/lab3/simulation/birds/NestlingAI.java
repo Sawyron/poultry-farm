@@ -13,16 +13,6 @@ public class NestlingAI extends BaseAI {
     @Override
     void move() {
         long currentTime = System.currentTimeMillis();
-        if (firstRun) {
-            lastVelocityChange = currentTime;
-            firstRun = false;
-        }
-        if (currentTime - lastVelocityChange > period) {
-            vX = (int) (Math.random() * (10 + 1) + -5) + 1;
-            vY = (int) (Math.random() * (10 + 1) + -5) + 1;
-            setVelocity();
-            lastVelocityChange = currentTime;
-        }
         synchronized (list) {
             for (Bird b : list) {
                 if (b instanceof Nestling) b.move();
@@ -31,7 +21,7 @@ public class NestlingAI extends BaseAI {
     }
 
     @Override
-    public void add(Bird bird) {
+    public synchronized void add(Bird bird) {
         bird.setVelocity(vX / 2, vY / 2);
         list.add(bird);
     }

@@ -25,8 +25,8 @@ public abstract class BaseAI extends Service {
     private Thread thread = new Thread(this);
     protected final List<Bird> list;
     protected final Warden WARDEN;
-    protected int vX = (int) (Math.random() * (10 + 1) + -5) + 1;
-    protected int vY = (int) (Math.random() * (10 + 1) + -5) + 1;
+    protected static int vX = (int) (Math.random() * (10 + 1) + -5) + 1;
+    protected static int vY = (int) (Math.random() * (10 + 1) + -5) + 1;
 
 
     protected void setVelocity() {
