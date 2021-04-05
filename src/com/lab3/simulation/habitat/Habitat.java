@@ -199,6 +199,17 @@ public class Habitat extends JFrame {
     public Habitat() {
         this.setFocusable(true);
         this.requestFocusInWindow();
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
 
         adultBirdAI = new AdultBirdAI(this, 20, birds);
         nestlingAI = new NestlingAI(this, 20, birds);

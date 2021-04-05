@@ -16,12 +16,14 @@ public class MainMenuBar extends JMenuBar {
     private final JMenuItem timeVisibleMenuItem = new JMenuItem("Показывать время");
     private final JMenuItem livingObjectDialogMenuItem = new JMenuItem("Список живых объектов");
     private final JMenuItem threadDialogMenuItem = new JMenuItem("Управление потоками");
+    private final JMenuItem consoleMenuItem = new JMenuItem("Консоль");
 
     public MainMenuBar(Habitat habitat) {
         this.habitat = habitat;
         JMenu mainMenu = new JMenu("Меню");
+        JMenu settingsMenu = new JMenu("Настройки");
         pauseMenuItem.setEnabled(false);
-        JMenuItem settingsDialogMenuItem = new JMenuItem("Настройки");
+        JMenuItem paramsDialogMenuItem = new JMenuItem("Параметры");
         JMenuItem exitMenuItem = new JMenuItem("Выход");
         startMenuItem.addActionListener(new ActionListener() {
             @Override
@@ -54,7 +56,7 @@ public class MainMenuBar extends JMenuBar {
                 habitat.setTimeVisibility(!habitat.isTimeVisible());
             }
         });
-        settingsDialogMenuItem.addActionListener(new ActionListener() {
+        paramsDialogMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 SettingsDialog settingsDialog = new SettingsDialog(habitat);
@@ -96,7 +98,12 @@ public class MainMenuBar extends JMenuBar {
                 threadDialog.setVisible(true);
             }
         });
-
+        consoleMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new Console(habitat);
+            }
+        });
 
         mainMenu.add(startMenuItem);
         mainMenu.add(pauseMenuItem);
@@ -105,12 +112,12 @@ public class MainMenuBar extends JMenuBar {
         mainMenu.add(timeVisibleMenuItem);
         mainMenu.addSeparator();
         mainMenu.add(livingObjectDialogMenuItem);
-        mainMenu.addSeparator();
-        mainMenu.add(settingsDialogMenuItem);
-        mainMenu.add(threadDialogMenuItem);
-        mainMenu.addSeparator();
         mainMenu.add(exitMenuItem);
-        this.add(mainMenu);
+        settingsMenu.add(paramsDialogMenuItem);
+        settingsMenu.add(threadDialogMenuItem);
+        settingsMenu.add(consoleMenuItem);
+        add(mainMenu);
+        add(settingsMenu);
     }
 
     void setRunningState(boolean flag) {
