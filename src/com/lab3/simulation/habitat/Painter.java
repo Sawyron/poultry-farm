@@ -1,6 +1,8 @@
 package com.lab3.simulation.habitat;
 
 
+import com.lab3.simulation.habitat.service.Service;
+
 public class Painter extends Service {
 
     public Painter(Habitat habitat, long period) {

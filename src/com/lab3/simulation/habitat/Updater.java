@@ -1,5 +1,7 @@
 package com.lab3.simulation.habitat;
 
+import com.lab3.simulation.habitat.service.Service;
+
 public class Updater extends Service {
 
     private long startTime;

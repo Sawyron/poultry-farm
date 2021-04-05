@@ -1,4 +1,7 @@
-package com.lab3.simulation.habitat;
+package com.lab3.simulation.habitat.service;
+
+import com.lab3.simulation.habitat.Habitat;
+import com.lab3.simulation.habitat.Warden;
 
 public abstract class Service implements Runnable {
     protected final Habitat habitat;
