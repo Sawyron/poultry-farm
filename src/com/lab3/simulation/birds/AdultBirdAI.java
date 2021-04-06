@@ -1,7 +1,6 @@
 package com.lab3.simulation.birds;
 
 import com.lab3.simulation.habitat.Habitat;
-import com.lab3.simulation.habitat.Warden;
 
 import java.util.List;
 

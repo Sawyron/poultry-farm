@@ -1,13 +1,9 @@
 package com.lab3.simulation.habitat;
 
-import com.lab3.simulation.birds.Bird;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.LinkedList;
-import java.util.List;
 
 public class ThreadDialog extends JDialog {
     private Habitat habitat;

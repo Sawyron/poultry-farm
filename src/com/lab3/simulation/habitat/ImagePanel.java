@@ -1,7 +1,7 @@
 package com.lab3.simulation.habitat;
 
-import com.lab3.simulation.birds.Bird;
 import com.lab3.simulation.IBehaviour;
+import com.lab3.simulation.birds.Bird;
 
 import javax.swing.*;
 import java.awt.*;
