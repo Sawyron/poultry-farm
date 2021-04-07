@@ -1,5 +1,7 @@
 package com.lab3.simulation.habitat;
 
+import com.lab3.simulation.habitat.services.Console;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -101,7 +103,8 @@ public class MainMenuBar extends JMenuBar {
         consoleMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new Console(habitat);
+                ConsoleCommandReaderThread consoleCommandReaderThread = new ConsoleCommandReaderThread(habitat);
+                Console console = new Console(consoleCommandReaderThread);
             }
         });
 

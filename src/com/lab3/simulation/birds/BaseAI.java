@@ -2,7 +2,7 @@ package com.lab3.simulation.birds;
 
 import com.lab3.simulation.habitat.Habitat;
 import com.lab3.simulation.habitat.Warden;
-import com.lab3.simulation.habitat.service.Service;
+import com.lab3.simulation.habitat.services.Service;
 
 import java.util.List;
 

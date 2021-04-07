@@ -1,6 +1,6 @@
 package com.lab3.simulation.habitat;
 
-import com.lab3.simulation.habitat.service.Service;
+import com.lab3.simulation.habitat.services.Service;
 
 public class Updater extends Service {
 

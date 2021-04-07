@@ -1,4 +1,4 @@
-package com.lab3.simulation.habitat.service;
+package com.lab3.simulation.habitat.services;
 
 import com.lab3.simulation.habitat.Habitat;
 import com.lab3.simulation.habitat.Warden;
@@ -37,5 +37,6 @@ public abstract class Service implements Runnable {
     }
 
     public abstract boolean isRunning();
+
     public abstract void execute();
 }
