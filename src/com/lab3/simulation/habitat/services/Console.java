@@ -24,38 +24,34 @@ public class Console {
     private int startInput;
     private int endInput;
     private Filter filter = new Filter();
-    private PipedWriter pipedWriter = new PipedWriter();
-    private PipedReader pipedReader = new PipedReader();
     private Thread thread;
+    private PipeChanel pipeChanel = new PipeChanel();
+    private final ConsoleCommandReaderThread consoleCommandReaderThread;
 
     public Console(ConsoleCommandReaderThread consoleCommandReaderThread) {
-        this();
         this.consoleCommandReaderThread = consoleCommandReaderThread;
-    }
-
-    private void initPipe() {
         try {
-            pipedWriter.close();
-            pipedReader.close();
-        } catch (IOException e) {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-        pipedWriter = new PipedWriter();
-        pipedReader = new PipedReader();
-        consoleCommandReaderThread.refreshPipe();
-        try {
-            pipedReader.connect(consoleCommandReaderThread.getPipedWriter());
-            pipedWriter.connect(consoleCommandReaderThread.getPipedReader());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        thread = new Thread(consoleCommandReaderThread);
-        thread.setDaemon(true);
-        thread.setPriority(2);
-        thread.start();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        frame.setTitle("Console");
+        frame.setSize(600, 400);
+        frame.add(mainPanel);
+        document = console.getStyledDocument();
+        console.setBackground(Color.DARK_GRAY);
+        console.setForeground(Color.green);
+        console.setCaretColor(Color.green);
+        console.setFont(new Font(Font.DIALOG_INPUT, Font.PLAIN, 16));
+        ((AbstractDocument) document).setDocumentFilter(filter);
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        addMenu();
     }
 
-    private ConsoleCommandReaderThread consoleCommandReaderThread;
 
     private class Filter extends DocumentFilter {
         @Override
@@ -87,29 +83,6 @@ public class Console {
         }
     }
 
-    private Console() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.setTitle("Console");
-        frame.setSize(600, 400);
-        frame.add(mainPanel);
-        document = console.getStyledDocument();
-        console.setBackground(Color.DARK_GRAY);
-        console.setForeground(Color.green);
-        console.setCaretColor(Color.green);
-        console.setFont(new Font(Font.DIALOG_INPUT, Font.PLAIN, 16));
-        ((AbstractDocument) document).setDocumentFilter(filter);
-        mainPanel.setLayout(new BorderLayout());
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-        addMenu();
-    }
-
     private void addMenu() {
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Меню");
@@ -137,18 +110,38 @@ public class Console {
     private void executeCommand(String s) {
         List<String> commands = new ArrayList<>(Arrays.asList(s.split(" ")));
         System.out.println(commands.get(0));
-        if (commands.get(0).equals("clear")) {
-            clear();
-        }
-        if (commands.get(0).equals("lorem")) printMessage("lorem ipsum");
-        if (commands.get(0).equals("red")) printMessage("21");
-        initPipe();
         try {
-            pipedWriter.write(s);
-            pipedWriter.close();
+            pipeChanel.refresh();
+            consoleCommandReaderThread.getPipeChanel().refresh();
+            consoleCommandReaderThread.connectPipe(pipeChanel);
+            pipeChanel.send(commands.get(0));
+            pipeChanel.refreshWriter();
+            thread = new Thread(consoleCommandReaderThread);
+            thread.setDaemon(true);
+            thread.setPriority(7);
+            thread.start();
+            String response;
+            synchronized (consoleCommandReaderThread) {
+                try {
+                    consoleCommandReaderThread.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (pipeChanel.isReady()) {
+                response = pipeChanel.receive();
+                printMessage(response);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if (commands.get(0).equals("clear")) {
+            clear();
+        }
+    }
+
+    public void connectPipe(PipeChanel pipeChanel) throws IOException {
+        this.pipeChanel.connect(pipeChanel);
     }
 
     private void clear() {

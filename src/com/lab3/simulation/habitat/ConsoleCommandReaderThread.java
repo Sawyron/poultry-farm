@@ -1,64 +1,55 @@
 package com.lab3.simulation.habitat;
 
+import com.lab3.simulation.habitat.services.PipeChanel;
+
 import java.io.IOException;
-import java.io.PipedReader;
-import java.io.PipedWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class ConsoleCommandReaderThread implements Runnable {
-    private PipedReader pipedReader = new PipedReader();
-    private PipedWriter pipedWriter = new PipedWriter();
+    private PipeChanel pipeChanel = new PipeChanel();
     private Habitat habitat;
 
     public ConsoleCommandReaderThread(Habitat habitat) {
         this.habitat = habitat;
     }
 
-    public PipedReader getPipedReader() {
-        return pipedReader;
+    public PipeChanel getPipeChanel() {
+        return pipeChanel;
     }
 
-    public PipedWriter getPipedWriter() {
-        return pipedWriter;
-    }
-
-    public void refreshPipe(){
-        try {
-            pipedWriter.close();
-            pipedReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        pipedReader = new PipedReader();
-        pipedWriter = new PipedWriter();
+    public void connectPipe(PipeChanel pipeChanel) throws IOException {
+        this.pipeChanel.connect(pipeChanel);
+        pipeChanel.connect(this.pipeChanel);
     }
 
     @Override
     public void run() {
-        int i = 0;
-        StringBuilder inputMessage = new StringBuilder();
+        String message = "";
         try {
-            while ((i = pipedReader.read()) != -1) {
-                inputMessage.append((char) i);
-            }
-            System.out.println("end");
+            message = pipeChanel.receive();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        List<String> commands = new ArrayList<>(Arrays.asList(inputMessage.toString().split(" ")));
+        List<String> commands = new ArrayList<>(Arrays.asList(message.split(" ")));
         switch (commands.get(0)) {
-            case "clear":
-                String s = "sad";
+            case "sad":
                 try {
-                    pipedWriter.write(s);
+                    pipeChanel.send("asd");
+                    pipeChanel.refreshWriter();
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    synchronized (this) {
+                        notify();
+                    }
                 }
                 break;
-            case "red":
-                System.out.println(21);
+            default:
+                synchronized (this) {
+                    notify();
+                }
                 break;
         }
     }
