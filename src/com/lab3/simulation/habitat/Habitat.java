@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.List;
 import java.util.*;
 
@@ -111,6 +112,15 @@ public class Habitat extends JFrame {
         }
         checkLifeTime(elapsedTime);
         time = elapsedTime;
+    }
+
+    private void addBird(Bird bird, long elapsed) {
+        synchronized (birds) {
+            adultBirdAI.add(bird);
+        }
+        lifeTime.put(bird.getID(), elapsed);
+        if (bird instanceof AdultBird) adultBirdCounter++;
+        if (bird instanceof Nestling) nestlingCounter++;
     }
 
     private void checkLifeTime(long elapsedTime) {
@@ -230,6 +240,7 @@ public class Habitat extends JFrame {
         setBottomPanel();
         this.setJMenuBar(mainMenuBar);
         addComponents();
+        loadConfig();
 
         // On close operation
         this.addWindowListener(new WindowAdapter() {
@@ -244,6 +255,7 @@ public class Habitat extends JFrame {
                 } catch (InterruptedException interruptedException) {
                     interruptedException.printStackTrace();
                 }
+                saveConfig();
                 System.exit(0);
             }
         });
@@ -488,6 +500,72 @@ public class Habitat extends JFrame {
 
     int getNestlingAIThreadPriority() {
         return nestlingBirdAIThread.getPriority();
+    }
+
+    void saveConfig() {
+        Properties config = new Properties();
+        config.setProperty("AdultBirdFrequency", Integer.toString(adultBirdSpawnFrequency));
+        config.setProperty("NestlingBirdFrequency", Integer.toString(nestlingSpawnFrequency));
+        config.setProperty("AdultBirdSpawnProbability", Double.toString(adultBirdSpawnProbability));
+        config.setProperty("NestlingMinFraction", Double.toString(nestlingMinFraction));
+        config.setProperty("AdultBirdLifeTime", Long.toString(AdultBird.getLifeTimeStatic()));
+        config.setProperty("NestlingLifeTime", Long.toString(Nestling.getLifeTimeStatic()));
+        try {
+            config.store(new FileWriter("config.properties"), "config");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void loadConfig() {
+        File file = new File("config.properties");
+        if (file.exists()) {
+            Properties config = new Properties();
+            FileInputStream fileInputStream;
+            try {
+                fileInputStream = new FileInputStream("config.properties");
+                config.load(fileInputStream);
+                adultBirdSpawnFrequency = Integer.parseInt(config.getProperty("AdultBirdFrequency"));
+                nestlingSpawnFrequency = Integer.parseInt(config.getProperty("NestlingBirdFrequency"));
+                adultBirdSpawnProbability = Double.parseDouble(config.getProperty("AdultBirdSpawnProbability"));
+                nestlingMinFraction = Double.parseDouble(config.getProperty("NestlingMinFraction"));
+                AdultBird.setLifeTime(Long.parseLong(config.getProperty("AdultBirdLifeTime")));
+                Nestling.setLifeTime(Long.parseLong(config.getProperty("NestlingLifeTime")));
+                fileInputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println(config.toString());
+        } else setDefaultValues();
+    }
+
+    void saveBirds(File file) {
+        String path = file.getPath();
+        if (!path.endsWith(".obj")) path += ".obj";
+        file = new File(path);
+        try (final ObjectOutputStream ObjectOutputStream = new ObjectOutputStream(new FileOutputStream(path))) {
+            if (!file.exists()) file.createNewFile();
+            synchronized (birds) {
+                ObjectOutputStream.writeObject(birds);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void loadBirds(File file) {
+        if (startStop) {
+            switchSimulationState();
+        }
+        List<Bird> list = new LinkedList<Bird>();
+        try (final FileInputStream FileOutputStream = new FileInputStream(file);
+             final ObjectInputStream ObjectInputStream = new ObjectInputStream(FileOutputStream)) {
+            list = (List<Bird>) ObjectInputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            //e.printStackTrace();
+        }
+        System.out.println(list);
+        list.forEach(b -> addBird(b, time));
     }
 
 }

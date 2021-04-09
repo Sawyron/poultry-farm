@@ -3,10 +3,15 @@ package com.lab3.simulation.habitat;
 import com.lab3.simulation.habitat.services.Console;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FilenameFilter;
 
 public class MainMenuBar extends JMenuBar {
 
@@ -19,6 +24,8 @@ public class MainMenuBar extends JMenuBar {
     private final JMenuItem livingObjectDialogMenuItem = new JMenuItem("Список живых объектов");
     private final JMenuItem threadDialogMenuItem = new JMenuItem("Управление потоками");
     private final JMenuItem consoleMenuItem = new JMenuItem("Консоль");
+    private final JMenuItem saveConfigMenuItem = new JMenuItem("Сохранить");
+    private final JMenuItem loadConfigMenuItem = new JMenuItem("Загрузить");
 
     public MainMenuBar(Habitat habitat) {
         this.habitat = habitat;
@@ -108,6 +115,60 @@ public class MainMenuBar extends JMenuBar {
             }
         });
 
+        saveConfigMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File myFilename;
+                JFileChooser chooser = new JFileChooser();
+                String s = "";
+                chooser.setCurrentDirectory(new File("").getAbsoluteFile());
+                chooser.setFileFilter(new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        return f.getPath().endsWith(".obj") || f.isDirectory();
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "OBJ";
+                    }
+                });
+                int res = chooser.showSaveDialog(habitat);
+                System.out.println(chooser.getSelectedFile());
+                if (res == JFileChooser.APPROVE_OPTION) {
+                    File f = chooser.getSelectedFile();
+                    habitat.saveBirds(chooser.getSelectedFile());
+                }
+            }
+        });
+
+        loadConfigMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File myFilename;
+                JFileChooser chooser = new JFileChooser();
+                String s = "";
+                chooser.setCurrentDirectory(new File("").getAbsoluteFile());
+                chooser.setFileFilter(new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        return f.getPath().endsWith(".obj") || f.isDirectory();
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "OBJ";
+                    }
+                });
+                int res = chooser.showOpenDialog(habitat);
+                System.out.println(chooser.getSelectedFile());
+                if (res == JFileChooser.APPROVE_OPTION) {
+                    File f = chooser.getSelectedFile();
+                    habitat.loadBirds(chooser.getSelectedFile());
+                }
+            }
+        });
+
         mainMenu.add(startMenuItem);
         mainMenu.add(pauseMenuItem);
         mainMenu.add(stopMenuItem);
@@ -115,6 +176,10 @@ public class MainMenuBar extends JMenuBar {
         mainMenu.add(timeVisibleMenuItem);
         mainMenu.addSeparator();
         mainMenu.add(livingObjectDialogMenuItem);
+        mainMenu.addSeparator();
+        mainMenu.add(saveConfigMenuItem);
+        mainMenu.add(loadConfigMenuItem);
+        mainMenu.addSeparator();
         mainMenu.add(exitMenuItem);
         settingsMenu.add(paramsDialogMenuItem);
         settingsMenu.add(threadDialogMenuItem);

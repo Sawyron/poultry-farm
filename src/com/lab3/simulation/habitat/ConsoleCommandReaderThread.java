@@ -40,17 +40,20 @@ public class ConsoleCommandReaderThread implements Runnable {
                     pipeChanel.refreshWriter();
                 } catch (IOException e) {
                     e.printStackTrace();
-                } finally {
-                    synchronized (this) {
-                        notify();
-                    }
                 }
-                break;
-            default:
-                synchronized (this) {
-                    notify();
+            case "set_n_fraction":
+                if (commands.size() > 1){
+                try {
+                    habitat.setNestlingMinFraction(Double.parseDouble(commands.get(1)));
+                    System.out.println(habitat.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            }
                 break;
+        }
+        synchronized (this){
+            notify();
         }
     }
 }

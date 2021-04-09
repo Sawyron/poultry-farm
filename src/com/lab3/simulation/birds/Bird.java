@@ -4,9 +4,14 @@ import com.lab3.simulation.IBehaviour;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.*;
 
-public abstract class Bird implements IBehaviour {
+public abstract class Bird implements IBehaviour, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private int x = 0;
     private int y = 0;
     protected int vX = (int) (Math.random() * (10 + 1) + -5) + 1;
@@ -125,6 +130,15 @@ public abstract class Bird implements IBehaviour {
             getStopped();
         } else outOfY = false;
         g.drawImage(imageIcon.getImage(), x, y, ImageW, ImageH, null);
+    }
+
+    @Override
+    public String toString() {
+        return "Bird{" +
+                "x=" + x +
+                ", y=" + y +
+                ", ID=" + ID +
+                '}';
     }
 
     private void getStopped() {

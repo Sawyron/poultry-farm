@@ -108,13 +108,12 @@ public class Console {
     }
 
     private void executeCommand(String s) {
-        List<String> commands = new ArrayList<>(Arrays.asList(s.split(" ")));
-        System.out.println(commands.get(0));
+        System.out.println(s);
         try {
             pipeChanel.refresh();
             consoleCommandReaderThread.getPipeChanel().refresh();
             consoleCommandReaderThread.connectPipe(pipeChanel);
-            pipeChanel.send(commands.get(0));
+            pipeChanel.send(s);
             pipeChanel.refreshWriter();
             thread = new Thread(consoleCommandReaderThread);
             thread.setDaemon(true);
@@ -135,7 +134,7 @@ public class Console {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (commands.get(0).equals("clear")) {
+        if (s.equals("clear")) {
             clear();
         }
     }
