@@ -92,6 +92,8 @@ public class Console {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String msg = "clear - отчистка консоли";
+                msg += "\n";
+                msg += "set_n_fraction f - установить минимальный процент f птенцов";
                 JOptionPane.showMessageDialog(null, msg, "Команды", JOptionPane.INFORMATION_MESSAGE);
             }
         });
@@ -108,7 +110,6 @@ public class Console {
     }
 
     private void executeCommand(String s) {
-        System.out.println(s);
         try {
             pipeChanel.refresh();
             consoleCommandReaderThread.getPipeChanel().refresh();

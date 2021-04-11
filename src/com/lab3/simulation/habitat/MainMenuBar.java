@@ -1,17 +1,14 @@
 package com.lab3.simulation.habitat;
 
 import com.lab3.simulation.habitat.services.Console;
+import com.lab3.simulation.habitat.services.OBJChooser;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FilenameFilter;
 
 public class MainMenuBar extends JMenuBar {
 
@@ -37,7 +34,7 @@ public class MainMenuBar extends JMenuBar {
         startMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!habitat.getStartStop()) {
+                if (!habitat.getRunning()) {
                     habitat.startSimulation();
                     setRunningState(true);
                 }
@@ -46,7 +43,7 @@ public class MainMenuBar extends JMenuBar {
         stopMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (habitat.getStartStop()) {
+                if (habitat.getRunning()) {
                     habitat.prepareSimulationStop();
                     setRunningState(false);
                 }
@@ -118,48 +115,32 @@ public class MainMenuBar extends JMenuBar {
         saveConfigMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                File myFilename;
-                JFileChooser chooser = new JFileChooser();
-                String s = "";
-                chooser.setCurrentDirectory(new File("").getAbsoluteFile());
-                chooser.setFileFilter(new FileFilter() {
+                habitat.pauseIfRunning();
+                JFileChooser chooser = new OBJChooser() {
                     @Override
-                    public boolean accept(File f) {
-                        return f.getPath().endsWith(".obj") || f.isDirectory();
+                    public File getSelectedFile() {
+                        File file = super.getSelectedFile();
+                        if (file != null && !file.getName().endsWith(".obj")) {
+                            file = new File(file.getAbsolutePath() + ".obj");
+                        }
+                        return file;
                     }
 
-                    @Override
-                    public String getDescription() {
-                        return "OBJ";
-                    }
-                });
+                };
                 int res = chooser.showSaveDialog(habitat);
                 System.out.println(chooser.getSelectedFile());
                 if (res == JFileChooser.APPROVE_OPTION) {
                     File f = chooser.getSelectedFile();
                     habitat.saveBirds(chooser.getSelectedFile());
                 }
+                habitat.switchSimulationState();
             }
         });
 
         loadConfigMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                File myFilename;
-                JFileChooser chooser = new JFileChooser();
-                String s = "";
-                chooser.setCurrentDirectory(new File("").getAbsoluteFile());
-                chooser.setFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return f.getPath().endsWith(".obj") || f.isDirectory();
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "OBJ";
-                    }
-                });
+                JFileChooser chooser = new OBJChooser();
                 int res = chooser.showOpenDialog(habitat);
                 System.out.println(chooser.getSelectedFile());
                 if (res == JFileChooser.APPROVE_OPTION) {

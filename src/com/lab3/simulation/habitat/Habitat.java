@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.*;
 
 public class Habitat extends JFrame {
-    private boolean startStop = false;
+    private boolean isRunning = false;
     private boolean timeVisible = false;
     private boolean isFirstRun = true;
     private final Warden WARDEN = new Warden();
@@ -73,8 +73,8 @@ public class Habitat extends JFrame {
     private final NestlingAI nestlingAI;
 
 
-    boolean getStartStop() {
-        return startStop;
+    boolean getRunning() {
+        return isRunning;
     }
 
     public boolean isFirstRun() {
@@ -370,9 +370,9 @@ public class Habitat extends JFrame {
     }
 
     void switchSimulationState() {
-        startStop = !startStop;
-        mainMenuBar.setPauseMenuItemState(startStop);
-        WARDEN.setPause(!startStop);
+        isRunning = !isRunning;
+        mainMenuBar.setPauseMenuItemState(isRunning);
+        WARDEN.setPause(!isRunning);
 
     }
 
@@ -390,7 +390,7 @@ public class Habitat extends JFrame {
     }
 
     void prepareSimulationStop() {
-        startStop = false;
+        isRunning = false;
         WARDEN.setPause(true);
         if (infoCheckBox.isSelected()) {
             JDialog dialogInfo = new JDialog();
@@ -401,6 +401,7 @@ public class Habitat extends JFrame {
             info += "Взрослых птиц: " + adultBirdTotalCounter + "\n";
             info += "Птенцов: " + nestlingTotalCounter + "\n";
             JTextArea infoTextArea = new JTextArea(info);
+            infoTextArea.setFont(new Font(Font.DIALOG_INPUT, Font.PLAIN, 16));
             infoTextArea.setEditable(false);
             JButton buttonContinue = new JButton("Ok");
             JButton buttonCancel = new JButton("Отмена");
@@ -409,7 +410,7 @@ public class Habitat extends JFrame {
             buttonCancel.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    startStop = true;
+                    isRunning = true;
                     WARDEN.setPause(false);
                     dialogInfo.dispose();
                 }
@@ -425,7 +426,7 @@ public class Habitat extends JFrame {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     super.windowClosing(e);
-                    startStop = true;
+                    isRunning = true;
                     dialogInfo.dispose();
                 }
             });
@@ -445,7 +446,7 @@ public class Habitat extends JFrame {
     private void stopSimulation() {
         WARDEN.setRunning(false);
         WARDEN.setPause(true);
-        startStop = false;
+        isRunning = false;
         isFirstRun = true;
         repaint();
         birds.clear();
@@ -464,10 +465,14 @@ public class Habitat extends JFrame {
         WARDEN.setRunning(true);
         WARDEN.setPause(false);
         time = 0;
-        startStop = true;
+        isRunning = true;
         startButton.setEnabled(false);
         stopButton.setEnabled(true);
         mainMenuBar.setRunningState(true);
+    }
+
+    void pauseIfRunning() {
+        if (isRunning) switchSimulationState();
     }
 
     void setPaintThreadPriority(int value) {
@@ -519,9 +524,9 @@ public class Habitat extends JFrame {
 
     void loadConfig() {
         File file = new File("config.properties");
+        FileInputStream fileInputStream = null;
         if (file.exists()) {
             Properties config = new Properties();
-            FileInputStream fileInputStream;
             try {
                 fileInputStream = new FileInputStream("config.properties");
                 config.load(fileInputStream);
@@ -534,16 +539,19 @@ public class Habitat extends JFrame {
                 fileInputStream.close();
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-            System.out.println(config.toString());
+            System.out.println(config);
         } else setDefaultValues();
     }
 
     void saveBirds(File file) {
-        String path = file.getPath();
-        if (!path.endsWith(".obj")) path += ".obj";
-        file = new File(path);
-        try (final ObjectOutputStream ObjectOutputStream = new ObjectOutputStream(new FileOutputStream(path))) {
+        try (final ObjectOutputStream ObjectOutputStream = new ObjectOutputStream(new FileOutputStream(file))) {
             if (!file.exists()) file.createNewFile();
             synchronized (birds) {
                 ObjectOutputStream.writeObject(birds);
@@ -554,9 +562,7 @@ public class Habitat extends JFrame {
     }
 
     void loadBirds(File file) {
-        if (startStop) {
-            switchSimulationState();
-        }
+        pauseIfRunning();
         List<Bird> list = new LinkedList<Bird>();
         try (final FileInputStream FileOutputStream = new FileInputStream(file);
              final ObjectInputStream ObjectInputStream = new ObjectInputStream(FileOutputStream)) {
@@ -566,6 +572,7 @@ public class Habitat extends JFrame {
         }
         System.out.println(list);
         list.forEach(b -> addBird(b, time));
+        switchSimulationState();
     }
 
 }

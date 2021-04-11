@@ -42,17 +42,23 @@ public class ConsoleCommandReaderThread implements Runnable {
                     e.printStackTrace();
                 }
             case "set_n_fraction":
-                if (commands.size() > 1){
-                try {
-                    habitat.setNestlingMinFraction(Double.parseDouble(commands.get(1)));
-                    System.out.println(habitat.toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (commands.size() > 1) {
+                    try {
+                        habitat.setNestlingMinFraction(Double.parseDouble(commands.get(1)));
+                        pipeChanel.send(habitat.toString());
+                        pipeChanel.refreshWriter();
+                    } catch (Exception e) {
+                        try {
+                            pipeChanel.send("incorrect input");
+                            pipeChanel.refreshWriter();
+                        } catch (IOException ioException) {
+                            ioException.printStackTrace();
+                        }
+                    }
                 }
-            }
                 break;
         }
-        synchronized (this){
+        synchronized (this) {
             notify();
         }
     }
