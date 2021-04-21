@@ -565,7 +565,9 @@ public class Habitat extends JFrame {
             //e.printStackTrace();
         }
         System.out.println(list);
-        list.forEach(b -> addBird(b, time));
+        list.forEach(b -> {
+            if (!b.isDead()) addBird(b, time);
+        });
     }
 
 }
