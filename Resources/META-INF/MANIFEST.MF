@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: com.lab3.simulation.Main
+Main-Class: com.poultryfarm.Main
 
