@@ -1,73 +1,72 @@
 package poultryfarm.server;
 
+import com.poultryfarm.network.TCPConnection;
+import com.poultryfarm.network.TCPConnectionListener;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public class Server {
-    private Set<Socket> activeClients = new HashSet<>();
+public class Server implements TCPConnectionListener {
+    public static void main(String[] args) {
+        new Server().start();
+    }
 
-    public void launch() {
-        try (ServerSocket server = new ServerSocket(8000)) {
-            System.out.println("Server started");
-            Socket socket = server.accept();
-            Thread thread = new Thread(new ClientWorker(socket));
-            thread.start();
+    private final Random random = new Random();
+    private final Map<TCPConnection, Long> connections = new HashMap<TCPConnection, Long>();
+
+
+    private void start() {
+        try (ServerSocket serverSocket = new ServerSocket(8000)) {
+            while (true) {
+                new TCPConnection(this, serverSocket.accept());
+            }
         } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
         }
     }
 
-    private synchronized void notifyClients() {
-        for (Socket socket : activeClients) {
-            try {
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                writer.write(activeClients.toString());
-                writer.newLine();
-                writer.flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+    @Override
+    public synchronized void onConnection(TCPConnection tcpConnection) {
+        long id = 0;
+        do {
+            id = Math.abs(random.nextLong());
+        } while (connections.containsValue(id));
+        for (TCPConnection connection : connections.keySet()) {
+            connection.sendSting(TCPConnectionListener.USER_CONNECT + ":" + id);
+        }
+        connections.put(tcpConnection, id);
+        System.out.println("User connected: " + id + " " + tcpConnection);
+    }
+
+    @Override
+    public synchronized void onReceiveString(TCPConnection tcpConnection, String value) {
+        String[] request = value.split(" ");
+        if (request[0].equals(TCPConnectionListener.USER_DISCONNECT)) tcpConnection.disconnect();
+        if (TCPConnectionListener.HASH_BIRDS.equals(request[0])) {
+            for (Map.Entry<TCPConnection, Long> entry : connections.entrySet()) {
+                if (entry.getValue().equals(Long.parseLong(request[1]))) {
+                    entry.getKey().sendSting(value);
+                    break;
+                }
             }
         }
     }
 
-    private class ClientWorker implements Runnable {
-        private Socket socket;
-
-        public ClientWorker(Socket socket) {
-            this.socket = socket;
-        }
-
-        @Override
-        public void run() {
-            System.out.println(socket.toString());
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                System.out.println("Thread started");
-                activeClients.add(socket);
-                notifyClients();
-                String request = "";
-                request = reader.readLine().strip();
-                System.out.println(request);
-                String response = "Received: " + request;
-                writer.write(response);
-                writer.newLine();
-                writer.flush();
-                socket.close();
-                activeClients.remove(socket);
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
+    @Override
+    public synchronized void onDisconnect(TCPConnection tcpConnection) {
+        long id = connections.get(tcpConnection);
+        connections.remove(tcpConnection);
+        System.out.println("User disconnected: " + tcpConnection + " " + id);
+        for (TCPConnection connection : connections.keySet()) {
+            connection.sendSting(TCPConnectionListener.USER_DISCONNECT + ":" + id);
         }
     }
 
+    @Override
+    public synchronized void onException(TCPConnection tcpConnection, Exception e) {
 
-    public static void main(String[] args) {
-        Server server = new Server();
-        server.launch();
     }
 }
+
