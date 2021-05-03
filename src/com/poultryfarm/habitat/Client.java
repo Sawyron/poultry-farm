@@ -3,30 +3,38 @@ package com.poultryfarm.habitat;
 import com.poultryfarm.network.TCPConnection;
 import com.poultryfarm.network.TCPConnectionListener;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.TreeMap;
 
 public class Client implements TCPConnectionListener {
 
-    public static void main(String[] args) {
-        new Client();
+    private TCPConnection connection;
+    private boolean isConnected = false;
+    private DefaultListModel<Long> users = new DefaultListModel<>();
+
+    public boolean isConnected() {
+        return isConnected;
     }
 
-    private TCPConnection connection;
 
-    private Client() {
-        try {
-            connection = new TCPConnection(this, "localhost", 8000);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            Thread.sleep(1000);
-            connection.sendSting(TCPConnectionListener.DISCONNECT);
-            connection.disconnect();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public Client() throws IOException {
+        connection = new TCPConnection(this, "localhost", 8000);
+    }
+
+    public void connect() throws IOException {
+        connection.connect();
+        isConnected = true;
+    }
+
+    public void disconnect() {
+        connection.sendSting(TCPConnectionListener.DISCONNECT);
+        connection.disconnect();
+        isConnected = false;
+    }
+
+    public DefaultListModel<Long> getUsersListModel() {
+        return users;
     }
 
     @Override
@@ -37,6 +45,25 @@ public class Client implements TCPConnectionListener {
     @Override
     public void onReceiveString(TCPConnection tcpConnection, String value) {
         System.out.println(value);
+        String[] command = value.split(":");
+        switch (command[0]) {
+            case TCPConnectionListener.USER_CONNECT -> {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        users.addElement(Long.parseLong(command[1]));
+                    }
+                });
+            }
+            case TCPConnectionListener.USER_DISCONNECT -> {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        users.removeElement(Long.parseLong(command[1]));
+                    }
+                });
+            }
+        }
     }
 
     @Override

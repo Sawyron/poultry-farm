@@ -24,7 +24,7 @@ public class TCPConnection {
             public void run() {
                 eventListener.onConnection(TCPConnection.this);
                 try {
-                    while (rxThread.isInterrupted()) {
+                    while (!rxThread.isInterrupted()) {
                         String msg = in.readLine();
                         if (msg != null) eventListener.onReceiveString(TCPConnection.this, msg);
                     }
@@ -35,11 +35,10 @@ public class TCPConnection {
                 }
             }
         });
-        rxThread.start();
     }
 
-    public void start() {
-
+    public void connect() {
+        rxThread.start();
     }
 
     @Override

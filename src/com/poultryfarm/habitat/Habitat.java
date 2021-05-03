@@ -1,6 +1,7 @@
 package com.poultryfarm.habitat;
 
 import com.poultryfarm.birds.*;
+import com.poultryfarm.network.TCPConnection;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -72,6 +73,17 @@ public class Habitat extends JFrame {
     private final AdultBirdAI adultBirdAI;
     private final NestlingAI nestlingAI;
 
+    private final List<HabitatEventListener> listeners = new LinkedList<>();
+    private Client client;
+
+    public void addEventListener(HabitatEventListener habitatEventListener) {
+        listeners.add(habitatEventListener);
+    }
+
+    public void removeEventListener(HabitatEventListener habitatEventListener) {
+        listeners.remove(habitatEventListener);
+    }
+
 
     boolean getRunning() {
         return isRunning;
@@ -140,11 +152,16 @@ public class Habitat extends JFrame {
                 }
             }
         }
+        removeBirdsByIds(toDelete);
+    }
+
+    private void removeBirdsByIds(Collection<Long> toDelete) {
         lifeTime.keySet().removeAll(toDelete);
         Bird.IDsRemoveAll(toDelete);
         synchronized (birds) {
             birds.forEach(b -> {
                 if (toDelete.contains(b.getID())) {
+                    //b.getKilled();
                     if (b instanceof AdultBird) adultBirdCounter--;
                     if (b instanceof Nestling) nestlingCounter--;
                 }
@@ -206,7 +223,16 @@ public class Habitat extends JFrame {
         this.nestlingMinFraction = nestlingMinFraction;
     }
 
+    public Client getClient() {
+        return client;
+    }
+
     public Habitat() {
+        try {
+            client = new Client();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         this.setFocusable(true);
         this.requestFocusInWindow();
         try {
@@ -247,6 +273,10 @@ public class Habitat extends JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 WARDEN.setFinish(true);
+                client.disconnect();
+                for (HabitatEventListener l : listeners){
+                    l.onExit();
+                }
                 try {
                     paintThread.join();
                     updateThread.join();
@@ -505,6 +535,18 @@ public class Habitat extends JFrame {
 
     int getNestlingAIThreadPriority() {
         return nestlingBirdAIThread.getPriority();
+    }
+
+    void hashBirds(int percent) {
+        TreeSet<Long> toDelete = new TreeSet<>();
+        synchronized (birds) {
+            int amountToDelete = birds.size() * percent / 100;
+            for (int i = 0; i < amountToDelete; i++) {
+                birds.get(i).getKilled();
+                toDelete.add(birds.get(i).getID());
+            }
+        }
+        removeBirdsByIds(toDelete);
     }
 
     void saveConfig() {

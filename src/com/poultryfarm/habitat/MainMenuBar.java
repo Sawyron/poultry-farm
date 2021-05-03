@@ -1,6 +1,7 @@
 package com.poultryfarm.habitat;
 
 import com.poultryfarm.habitat.services.Console;
+import com.poultryfarm.habitat.services.NetworkDialog;
 import com.poultryfarm.habitat.services.OBJChooser;
 
 import javax.swing.*;
@@ -21,6 +22,7 @@ public class MainMenuBar extends JMenuBar {
     private final JMenuItem livingObjectDialogMenuItem = new JMenuItem("Список живых объектов");
     private final JMenuItem threadDialogMenuItem = new JMenuItem("Управление потоками");
     private final JMenuItem consoleMenuItem = new JMenuItem("Консоль");
+    private final JMenuItem networkMenuItem = new JMenuItem("Сеть");
     private final JMenuItem saveConfigMenuItem = new JMenuItem("Сохранить");
     private final JMenuItem loadConfigMenuItem = new JMenuItem("Загрузить");
 
@@ -150,6 +152,13 @@ public class MainMenuBar extends JMenuBar {
             }
         });
 
+        networkMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                NetworkDialog networkDialog = new NetworkDialog(habitat.getClient());
+            }
+        });
+
         mainMenu.add(startMenuItem);
         mainMenu.add(pauseMenuItem);
         mainMenu.add(stopMenuItem);
@@ -157,6 +166,7 @@ public class MainMenuBar extends JMenuBar {
         mainMenu.add(timeVisibleMenuItem);
         mainMenu.addSeparator();
         mainMenu.add(livingObjectDialogMenuItem);
+        mainMenu.add(networkMenuItem);
         mainMenu.addSeparator();
         mainMenu.add(saveConfigMenuItem);
         mainMenu.add(loadConfigMenuItem);

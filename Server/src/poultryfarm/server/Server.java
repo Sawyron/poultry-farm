@@ -20,7 +20,7 @@ public class Server implements TCPConnectionListener {
     private void start() {
         try (ServerSocket serverSocket = new ServerSocket(8000)) {
             while (true) {
-                new TCPConnection(this, serverSocket.accept());
+                new TCPConnection(this, serverSocket.accept()).connect();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -36,14 +36,17 @@ public class Server implements TCPConnectionListener {
         for (TCPConnection connection : connections.keySet()) {
             connection.sendSting(TCPConnectionListener.USER_CONNECT + ":" + id);
         }
-        connections.put(tcpConnection, id);
         System.out.println("User connected: " + id + " " + tcpConnection);
+        for (Long userID : connections.values()) {
+            tcpConnection.sendSting(TCPConnectionListener.USER_CONNECT + ":" + userID);
+        }
+        connections.put(tcpConnection, id);
     }
 
     @Override
     public synchronized void onReceiveString(TCPConnection tcpConnection, String value) {
-        String[] request = value.split(" ");
-        if (request[0].equals(TCPConnectionListener.USER_DISCONNECT)) tcpConnection.disconnect();
+        String[] request = value.split(":");
+        if (request[0].equals(TCPConnectionListener.DISCONNECT)) tcpConnection.disconnect();
         if (TCPConnectionListener.HASH_BIRDS.equals(request[0])) {
             for (Map.Entry<TCPConnection, Long> entry : connections.entrySet()) {
                 if (entry.getValue().equals(Long.parseLong(request[1]))) {
