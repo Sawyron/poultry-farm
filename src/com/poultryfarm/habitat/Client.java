@@ -5,10 +5,10 @@ import com.poultryfarm.network.TCPConnectionListener;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.TreeMap;
 
 public class Client implements TCPConnectionListener {
 
+    private Habitat habitat;
     private TCPConnection connection;
     private boolean isConnected = false;
     private DefaultListModel<Long> users = new DefaultListModel<>();
@@ -18,19 +18,26 @@ public class Client implements TCPConnectionListener {
     }
 
 
-    public Client() throws IOException {
-        connection = new TCPConnection(this, "localhost", 8000);
+    public Client(Habitat habitat) {
+        this.habitat = habitat;
     }
 
     public void connect() throws IOException {
+        connection = new TCPConnection(this, "localhost", 8000);
         connection.connect();
         isConnected = true;
     }
 
     public void disconnect() {
-        connection.sendSting(TCPConnectionListener.DISCONNECT);
-        connection.disconnect();
-        isConnected = false;
+        if (isConnected) {
+            connection.sendSting(TCPConnectionListener.CLIENT_DISCONNECT);
+            connection.disconnect();
+            isConnected = false;
+        }
+    }
+
+    public void sendHashBirdsCommand(long id, int percent) {
+        connection.sendSting(TCPConnectionListener.HASH_BIRDS + ":" + id + ":" + percent);
     }
 
     public DefaultListModel<Long> getUsersListModel() {
@@ -63,6 +70,10 @@ public class Client implements TCPConnectionListener {
                     }
                 });
             }
+            case TCPConnectionListener.HASH_BIRDS -> {
+                System.out.println(value);
+                habitat.hashBirds(Integer.parseInt(command[2]));
+            }
         }
     }
 
@@ -73,6 +84,6 @@ public class Client implements TCPConnectionListener {
 
     @Override
     public void onException(TCPConnection tcpConnection, Exception e) {
-
+        isConnected = false;
     }
 }

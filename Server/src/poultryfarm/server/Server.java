@@ -5,7 +5,6 @@ import com.poultryfarm.network.TCPConnectionListener;
 
 import java.io.*;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.*;
 
 public class Server implements TCPConnectionListener {
@@ -45,8 +44,9 @@ public class Server implements TCPConnectionListener {
 
     @Override
     public synchronized void onReceiveString(TCPConnection tcpConnection, String value) {
+        System.out.println(value);
         String[] request = value.split(":");
-        if (request[0].equals(TCPConnectionListener.DISCONNECT)) tcpConnection.disconnect();
+        if (request[0].equals(TCPConnectionListener.CLIENT_DISCONNECT)) tcpConnection.disconnect();
         if (TCPConnectionListener.HASH_BIRDS.equals(request[0])) {
             for (Map.Entry<TCPConnection, Long> entry : connections.entrySet()) {
                 if (entry.getValue().equals(Long.parseLong(request[1]))) {

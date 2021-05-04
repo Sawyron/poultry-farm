@@ -75,6 +75,7 @@ public class Habitat extends JFrame {
 
     private final List<HabitatEventListener> listeners = new LinkedList<>();
     private Client client;
+    private boolean isConnected = false;
 
     public void addEventListener(HabitatEventListener habitatEventListener) {
         listeners.add(habitatEventListener);
@@ -227,12 +228,13 @@ public class Habitat extends JFrame {
         return client;
     }
 
+    public void connect() throws IOException {
+        client.connect();
+        isConnected = true;
+    }
+
     public Habitat() {
-        try {
-            client = new Client();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        client = new Client(this);
         this.setFocusable(true);
         this.requestFocusInWindow();
         try {

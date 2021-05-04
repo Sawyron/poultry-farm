@@ -4,7 +4,8 @@ public interface TCPConnectionListener {
     String USER_CONNECT = "USER_CON";
     String USER_DISCONNECT = "USER_D";
     String HASH_BIRDS = "H_BIRDS";
-    String DISCONNECT = "END_SESSION";
+    String CLIENT_DISCONNECT = "END_SESSION";
+    String SERVER_DISCONNECT = "SHUTDOWN_SERVER";
 
     void onConnection(TCPConnection tcpConnection);
     void onReceiveString(TCPConnection tcpConnection, String value);
